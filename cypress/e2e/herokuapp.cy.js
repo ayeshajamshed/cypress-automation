@@ -1,31 +1,31 @@
-describe("Automate the the-internet.herokuapp.com webiste", () => {
+describe('Automate the the-internet.herokuapp.com webiste', () => {
   const addElementsUrl =
-    "https://the-internet.herokuapp.com/add_remove_elements/";
-  const baseUrl = "https://the-internet.herokuapp.com/";
-  const Dom = "https://the-internet.herokuapp.com/challenging_dom";
+    'https://the-internet.herokuapp.com/add_remove_elements/';
+  const baseUrl = 'https://the-internet.herokuapp.com/';
+  const Dom = 'https://the-internet.herokuapp.com/challenging_dom';
 
-  it("Add/Remove Element", () => {
+  it('Add/Remove Element', () => {
     cy.visit(baseUrl);
     cy.visit(addElementsUrl);
-    cy.contains("Add Element").click();
-    cy.contains("Add Element").click();
-    cy.get(".added-manually").should("have.length", 2);
-    cy.get(".added-manually").first().click();
-    cy.get(".added-manually").should("have.length", 1);
+    cy.contains('Add Element').click();
+    cy.contains('Add Element').click();
+    cy.get('.added-manually').should('have.length', 2);
+    cy.get('.added-manually').first().click();
+    cy.get('.added-manually').should('have.length', 1);
   });
 
-  it("Logs in using admin/admin credentials", () => {
-    cy.visit("https://admin:admin@the-internet.herokuapp.com/basic_auth");
+  it('Logs in using admin/admin credentials', () => {
+    cy.visit('https://admin:admin@the-internet.herokuapp.com/basic_auth');
     cy.contains(
-      "Congratulations! You must have the proper credentials."
-    ).should("be.visible");
+      'Congratulations! You must have the proper credentials.'
+    ).should('be.visible');
   });
 
-  it("Logs broken and working images", () => {
-    cy.visit("https://the-internet.herokuapp.com/broken_images");
+  it('Logs broken and working images', () => {
+    cy.visit('https://the-internet.herokuapp.com/broken_images');
 
-    cy.get("img").each(($img) => {
-      const url = $img.prop("src");
+    cy.get('img').each(($img) => {
+      const url = $img.prop('src');
 
       cy.request({ url: url, failOnStatusCode: false }).then((res) => {
         const status = res.status;
@@ -38,45 +38,57 @@ describe("Automate the the-internet.herokuapp.com webiste", () => {
     });
   });
 
-  it("Verifies table structure", () => {
+  it('Verifies table structure', () => {
     cy.visit(Dom);
-    cy.get("table thead tr th").should("have.length", 7);
-    cy.get("table tbody tr").should("have.length", 10);
+    cy.get('table thead tr th').should('have.length', 7);
+    cy.get('table tbody tr').should('have.length', 10);
   });
 
-  it("Clicks edit in the 5th row", () => {
+  it('Clicks edit in the 5th row', () => {
     cy.visit(Dom);
-    cy.get("table tbody tr")
+    cy.get('table tbody tr')
       .eq(4)
       .within(() => {
-        cy.contains("edit").click();
+        cy.contains('edit').click();
       });
   });
-  it("Clicks all foo buttons", () => {
+  it('Clicks all foo buttons', () => {
     cy.visit(Dom);
-    cy.get(".button").eq(0).click(); // blue
-    cy.get(".button").eq(1).click(); // red
-    cy.get(".button").eq(2).click(); // green
+    cy.get('.button').eq(0).click(); // blue
+    cy.get('.button').eq(1).click(); // red
+    cy.get('.button').eq(2).click(); // green
     // cy.get("#canvas")
     //   .invoke("text")
     //   .then((text) => {
     //     cy.log("the answer is +text.trim()");
     //   });
   });
-  describe("Canvas Answer Logger", () => {
-    it("Should log the answer text shown below the canvas", () => {
-      cy.visit("https://the-internet.herokuapp.com/challenging_dom");
+});
 
-      cy.get("#canvas").screenshot("canvas-snap");
-      cy.task("ocrCanvas", "canvas-ocr.cy.js/canvas-snap.png").then(
-        (number) => {
-          cy.log("OCR Detected Answer:", number);
+//detecting the text from the canvas using OCR
+describe('Canvas OCR Test', () => {
+  it('should extract the number from canvas image', () => {
+    const imagePath = `${Cypress.spec.name}/canvas-snap.png`;
 
-          // Now you can use the number in your test
-          expect(number).to.be.a("number");
-          expect(number).to.be.within(1, 1000000); // or whatever your expected range is
-        }
-      );
+    cy.task('deleteScreenshot', imagePath).then((msg) => {
+      cy.log(msg); // Log whether the file existed or not
+    });
+
+    cy.visit('https://the-internet.herokuapp.com/challenging_dom');
+
+    cy.get('#canvas').screenshot(`${Cypress.spec.name}/canvas-snap`);
+
+    cy.task('ocrCanvas', imagePath).then((ocrText) => {
+      cy.log('OCR Raw Text:', ocrText);
+
+      const match = ocrText.match(/Answer:\s*(\d+)/);
+      expect(match).to.not.be.null;
+
+      const number = parseInt(match[1], 10);
+      cy.log('Parsed Number:', number);
+
+      expect(number).to.be.a('number');
+      expect(number).to.be.within(1, 1000000);
     });
   });
 });

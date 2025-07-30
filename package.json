@@ -1,6 +1,6 @@
 {
 	"devDependencies": {
-		"cypress": "^14.5.1"
+		"cypress": "^14.5.2"
 	},
 	"dependencies": {
 		"tesseract.js": "^6.0.1"

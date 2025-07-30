@@ -1,1 +1,6 @@
 node_modules/*
+
+**/screenshots/*
+
+pnpm-lock.yaml
+package-lock.json
